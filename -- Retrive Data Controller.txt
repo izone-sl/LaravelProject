@@ -1,0 +1,33 @@
+        public function index()
+        {
+            //
+            $user = Auth::user()->email;
+            $dataRetrive = Post::all();
+            
+            $usersPost = Post::where('UID', $user)->paginate(2);
+
+            return view('gustdashboard',[
+                'DataRetrive' => $dataRetrive,
+                'users'=>$user,
+                'usersPost'=>$usersPost
+             ]);
+        }
+
+        @foreach ($usersPost as $item)
+            {{$item -> id}}
+            {{$item -> title}}
+            <img src="{{url('uploads/'.$item->FN1)}}" width="40rem">
+        @endforeach
+
+    //Pagination Button
+            {{$usersPost->links()}}
+
+    //Edit Button
+             <a href="{{route('GustPosts.edit', $item->id)}}" class="btn btn-sm btn-info">Edit</a>
+
+    //Remove Button
+            <form method="POST" action="{{route('GustPosts.destroy', $item->id)}}">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-sm btn-danger">Remove</button>       
+            </form>

@@ -1,0 +1,34 @@
+    public function edit($id)
+    {
+        //
+        $data = Post::find($id);
+        return view ('gustUpdateForm',['DataEdit'=> $data]);
+     }
+
+
+    <form action="{{route('GustPosts.update', $DataEdit->id)}}" method="post" enctype="multipart/form-data">
+            @csrf
+            @method('put')
+
+            <input name="title" id="" class="btn btn-primary" value="{{$DataEdit->title}}" type="button" value="">
+            <button type="submit" class="btn btn-sucess">Update</button>
+    </form>
+
+    public function update(Request $request, $id)
+    {
+
+        $file = $request->file('img1');
+        $extension = $file->getClientOriginalExtension();
+        Storage::disk('public')->put($file->getFilename().'.'.$extension,  File::get($file));
+
+            $objProductsUpdate = Post::find($id);
+            $objProductsUpdate -> ProductName = $request -> get('PNameTxt');
+            $objProductsUpdate -> ProductModel = $request -> get('PModelTxt');
+            $objProductsUpdate -> ProductPrice = $request -> get('PPriceTxt');
+            $objProductsUpdate -> OriginalFileName = $file->getClientOriginalName();
+            $objProductsUpdate -> FileName = $file->getFilename().'.'.$extension;
+            $objProductsUpdate ->save();
+
+            return redirect()->route('products.index'); 
+    }
+

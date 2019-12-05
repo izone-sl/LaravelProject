@@ -1,0 +1,42 @@
+**************** Migrations are used to create tables in laravel
+
+    .. php artisan make:migration create_table_posts
+-- above code will be create a migration file inside database -> migration 
+   to create a table in DB, therefore we should assigned the DB name into .env file
+
+-- nullable() allows the table fileds to be blank
+-- creating a table using migration
+
+public function up()
+    {
+        Schema::create('table_posts', function (Blueprint $table) {
+            $table->bigIncrements('id');
+              $table->string('UID');          //User ID
+            $table->string('title');
+            $table->string('Description');
+            $table->string('Name');
+            $table->string('Phone');
+            $table->string('Location');
+            $table->string('FN1')->nullable();      //file name
+            $table->string('OFN1')->nullable();     // Orginal file name
+            $table->string('FN2')->nullable();
+            $table->string('OFN2')->nullable();
+            $table->string('FN3')->nullable();
+            $table->string('OFN3')->nullable();
+            $table->timestamps();
+        });
+    }
+
+-- then run below code to create a table in DB and view the table in DB
+    .. php artisan migrate
+
+************* Models are used to mange quries inside the table
+    .. php artisan make:model Post
+--above code will create a model
+
+-- write the following code to mange the quries in the model
+    class Post extends Model
+    {
+        //
+        protected $table ='table_posts';   // 'table_posts' is the name of Table
+    }

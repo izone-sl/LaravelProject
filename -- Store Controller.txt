@@ -1,0 +1,62 @@
+-- assign a route
+        .. Route::resource('Posts', 'PostController');   // This is for CRUD Operations
+
+-- create a form in blade
+        <form action="{{route('Posts.store')}}" method="post">
+                @csrf // required 
+
+                <div class="form-group">
+                      <input type="text"
+                        class="form-control" name="title" id="" aria-describedby="helpId" placeholder="">
+                      <small id="helpId" class="form-text text-muted">Title</small>
+                </div>
+
+                <div class="form-group">
+                      <label for=""></label>
+                      <input type="file" class="form-control-file" name="img1" id="" placeholder="" aria-describedby="fileHelpId">
+                      <small id="fileHelpId" class="form-text text-muted">Image 01</small>
+                </div>
+
+                 <button type="submit" name="btnSubmit" class="btn btn-primary">Posts</button>
+        </form>
+
+ -- inside the store of controller 
+        ** assign the model 
+            ..use App\Post; 
+            ..use Illuminate\Support\Facades\Storage;
+            ..use Illuminate\Support\Facades\File;
+
+** Make a storage path to store Files
+            -- config -> filesystem.php
+                'disk'=>
+                    'public' => [
+                        'driver' => 'local',
+                        'root' => public_path().'/uploads',
+                        'url' => env('APP_URL').'/public',
+                        'visibility' => 'public',
+                    ],
+-- then create a folder within public folder name uploads
+
+-- inside the store of controller 
+                public function store(Request $request)
+                {
+                    //
+
+                    $file = $request->file('img1');
+                    $extension = $file->getClientOriginalExtension();
+                    Storage::disk('public')->put($file->getFilename().'.'.$extension,  File::get($file));
+
+                    $objProducts = new Post();
+                    $objProducts -> UID = $request -> input('title');
+                    $objProducts -> title = $request -> input('title');
+                    
+
+                    $objProducts-> OFN1 = $file->getClientOriginalName();
+                    $objProducts-> FN1 = $file->getFilename().'.'.$extension;
+
+                    $objProducts->save();
+            
+                    $PName = $request -> input('title');
+                    return view('welcome',['PName'=>$PName,'datapass'=>'Post Has Been Added Successfull']); 
+                }
+

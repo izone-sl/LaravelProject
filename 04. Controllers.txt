@@ -1,0 +1,230 @@
+*********** Controllers are used to handle backend part of the project
+
+-- following code will be used to make CRUD operation + create a Controller with neccessary elements
+    ..php artisan make:controller PostController --resource
+
+
+-- changing route
+
+    ##inside the PostController
+        public function index()
+        {
+            //
+            return view('welcome');
+        }
+
+    ##inside the routes->web.php
+        Route::get('/', 'PostController@index');
+
+
+------------------------------------------------------------------------------------
+## Storing Data & Files
+
+    ###Storing Data
+    -- assign a route
+        .. Route::resource('Posts', 'PostController');   // This is for CRUD Operations
+    
+    -- create a form in blade
+        <form action="{{route('Posts.store')}}" method="post">
+                @csrf // required 
+
+                <div class="form-group">
+                      <input type="text"
+                        class="form-control" name="title" id="" aria-describedby="helpId" placeholder="">
+                      <small id="helpId" class="form-text text-muted">Title</small>
+                </div>
+
+                 <button type="submit" name="btnSubmit" class="btn btn-primary">Posts</button>
+        </form>
+
+    -- inside the store of controller 
+        ** assign the model 
+            ..use App\Post; 
+            .. public function store(Request $request)
+                {
+                    //
+                    $objProducts = new Post();
+                    $objProducts -> UID = $request -> input('title');
+                    $objProducts -> title = $request -> input('title');
+                    $objProducts -> Description = $request -> input('desc');
+                    $objProducts -> Phone = $request -> input('phone');
+                    $objProducts -> Name = $request -> input('name');
+                    $objProducts -> Location = $request -> input('location');
+                    $objProducts->save();
+            
+                    $PName = $request -> input('title');
+                    return view('welcome',['PName'=>$PName,'datapass'=>'Post Has Been Added Successfull']);
+                
+                    /* return redirect()->route('Posts.index');  */
+                }
+
+
+    ###Storing Files
+
+    -- assign a route
+        .. Route::resource('Posts', 'PostController');   // This is for CRUD Operations
+    
+    -- create a form in blade
+        <form action="{{route('Posts.store')}}" method="post">
+                @csrf // required 
+
+                <div class="form-group">
+                      <input type="text"
+                        class="form-control" name="title" id="" aria-describedby="helpId" placeholder="">
+                      <small id="helpId" class="form-text text-muted">Title</small>
+                </div>
+
+                <div class="form-group">
+                      <label for=""></label>
+                      <input type="file" class="form-control-file" name="img1" id="" placeholder="" aria-describedby="fileHelpId">
+                      <small id="fileHelpId" class="form-text text-muted">Image 01</small>
+                </div>
+                 <button type="submit" name="btnSubmit" class="btn btn-primary">Posts</button>
+        </form>
+
+    -- inside the store of controller 
+        ** assign the model 
+            ..use App\Post; 
+            ..use Illuminate\Support\Facades\Storage;
+            ..use Illuminate\Support\Facades\File;
+
+        ** Make a storage path to store Files
+            -- config -> filesystem.php
+                'disk'=>
+                    'public' => [
+                        'driver' => 'local',
+                        'root' => public_path().'/uploads',
+                        'url' => env('APP_URL').'/public',
+                        'visibility' => 'public',
+                    ],
+            -- then create a folder within public folder name uploads
+
+            -- inside the store of controller 
+                public function store(Request $request)
+                {
+                    //
+
+                    $file = $request->file('img1');
+                    $extension = $file->getClientOriginalExtension();
+                    Storage::disk('public')->put($file->getFilename().'.'.$extension,  File::get($file));
+
+                    $objProducts = new Post();
+                    $objProducts -> UID = $request -> input('title');
+                    $objProducts -> title = $request -> input('title');
+                    
+
+                    $objProducts-> OFN1 = $file->getClientOriginalName();
+                    $objProducts-> FN1 = $file->getFilename().'.'.$extension;
+
+                    $objProducts->save();
+            
+                    $PName = $request -> input('title');
+                    return view('welcome',['PName'=>$PName,'datapass'=>'Post Has Been Added Successfull']); 
+                }
+
+--------------------------------------------------------------------------------------------------
+## Retrive data from DB
+    -- we can retrive a data and display it through index function of controller
+        public function index()
+        {
+            //
+            $user = Auth::user()->email;    // fecthing session email
+            $dataRetrive = Post::all();     //display all data
+            
+            $usersPost = Post::where('UID', $user)->paginate(2); //display by where condition
+
+            return view('gustdashboard',[
+                'DataRetrive' => $dataRetrive,
+                'users'=>$user,
+                'usersPost'=>$usersPost
+             ]);
+        }
+
+        @foreach ($usersPost as $item)
+            {{$item -> id}}
+            {{$item -> title}}
+            <img src="{{url('uploads/'.$item->FN1)}}" width="40rem">
+        @endforeach
+
+        //Pagination Button
+            {{$usersPost->links()}}
+
+        //Edit Button
+             <a href="{{route('GustPosts.edit', $item->id)}}" class="btn btn-sm btn-info">Edit</a>
+
+        //Remove Button
+            <form method="POST" action="{{route('GustPosts.destroy', $item->id)}}">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-sm btn-danger">Remove</button>       
+            </form>
+
+---------------------------------------------------------------------------------------------------
+## Editing & Updating
+    ** Edit
+    -- we use edit function to get the URL of data 
+    -- we use update function to update the recode that exsist on DB
+    -- A edit button is required to get URL
+        //Edit Button
+        <a href="{{route('GustPosts.edit', $item->id)}}" class="btn btn-sm btn-info">Edit</a>
+    -- following edit function code will get the URL 
+        $data = productsModel::find($id);
+        return view('pages.products',[
+            'productTitles' => 'Samsung, Iphone, LG, Nokia ',
+            'DataEdit' => $data
+        ]);
+
+    ** retrive data into inputs
+        <div class="form-group p-3"> 
+            <input type="text" class="form-control" name="title" value="{{$DataEdit-> title}}" placeholder="">
+            <small id="helpId" class="form-text text-muted">Title</small>
+        </div>
+
+    ** Update Form
+         <form action="{{route('GustPosts.update', $DataEdit->id)}}" method="post" enctype="multipart/form-data">
+            @csrf
+            @method('put')
+
+        </form>
+
+    ** update function
+        public function update(Request $request, $id)
+        {
+
+            $file = $request->file('uploadFileTxt');
+            $extension = $file->getClientOriginalExtension();
+            Storage::disk('public')->put($file->getFilename().'.'.$extension,  File::get($file));
+
+                $objProductsUpdate = Post::find($id);                 // required to put 
+                $objProducts -> UID = $request -> input('email');
+                $objProducts -> title = $request -> input('title');
+                $objProducts -> Description = $request -> input('desc');
+                $objProducts -> Phone = $request -> input('phone');
+                $objProducts -> Name = $request -> input('name');
+                $objProducts -> Location = $request -> input('location');
+                $objProductsUpdate ->save(); 
+                return redirect()->route('welcome'); 
+        }
+
+---------------------------------------------------------------------------------------------------
+
+## Distory
+    -- delete button
+         <form method="POST" action="{{route('GustPosts.destroy', $item->id)}}">
+           @csrf
+           @method('DELETE')
+           <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+          
+          </form>
+
+    -- delete function
+    
+    public function destroy($id)
+    {
+        //
+        $objProductsDelete = productsModel::find($id);
+        $objProductsDelete -> destroy($id);
+        return redirect()->route('products.index');
+    }
+
+    

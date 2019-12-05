@@ -1,0 +1,60 @@
+
+
+*** Starting a New Project
+
+-- start xampp server MySQL and Apache
+-- Open Code Editor
+-- Select a folder inside the C:xampp/htdoc/...
+
+..laravel new NITTest                   // NITTest is a project Name
+..composer require laravel/ui --dev     // Used to create auth
+..php artisan ui vue --auth             // Used to create auth
+..npm install && npm run dev            // Used to create auth
+..php artisan serve                     // Run the project
+
+## create a DB
+-- http://localhost/phpmyadmin
+-- assign DB name into .env file
+    DB_CONNECTION=mysql
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_DATABASE=nittest
+    DB_USERNAME=root
+    DB_PASSWORD=
+-- run migrate command to insert default user table into DB
+    .. php artisan migrate
+
+-- Run and register a user and login as a user
+    .. php artisan serve
+
+-- following files will be created 
+    # layout folder
+    # app.blade.php
+    # home.blade.php //dashboard
+    # login.blade.php
+    # register.blade.php
+
+    # homecontroller
+    # usermodel
+
+-- seperate admin dashboard and gust dashboard
+
+    # inside the home controller do following Code
+
+    public function index()
+    { 
+        $user = Auth::user()->email;        // fetching user email
+
+        if ($user == "admin@gmail.com") {
+            # code...
+            return view('home',['user'=>"admin"]); //view should be admin dashboard
+        }
+        else{
+            return view('home',['user'=>"gust"]); //view should be gust dashboard
+        }
+    }
+
+    # fecthing array info to blade
+        You are logged in! ID: {{$user}}
+
+
